@@ -39,7 +39,7 @@ export const APWMessages = {
 
   async getLoginNamesForURL(
     session: SRPSession,
-    url: string,
+    url: string
   ): Promise<Message> {
     const sdataEncrypted = await session.encrypt({
       ACT: Action.GHOST_SEARCH,
@@ -64,14 +64,14 @@ export const APWMessages = {
   async getPasswordForURL(
     session: SRPSession,
     url: string,
-    loginName: string,
+    loginName: string
   ): Promise<Message> {
     const sdata = session.serialize(
       await session.encrypt({
         ACT: Action.SEARCH,
         URL: url,
         USR: loginName,
-      }),
+      })
     );
     return {
       cmd: Command.GET_PASSWORD_FOR_LOGIN_NAME,
@@ -88,16 +88,13 @@ export const APWMessages = {
     };
   },
 
-  async getOTPForURL(
-    session: SRPSession,
-    url: string,
-  ): Promise<Message> {
+  async getOTPForURL(session: SRPSession, url: string): Promise<Message> {
     const sdata = session.serialize(
       await session.encrypt({
         ACT: Action.SEARCH,
         TYPE: "oneTimeCodes",
         frameURLs: [url],
-      }),
+      })
     );
     return {
       cmd: Command.DID_FILL_ONE_TIME_CODE,
@@ -113,16 +110,13 @@ export const APWMessages = {
     };
   },
 
-  async listOTPForURL(
-    session: SRPSession,
-    url: string,
-  ): Promise<Message> {
+  async listOTPForURL(session: SRPSession, url: string): Promise<Message> {
     const sdata = session.serialize(
       await session.encrypt({
         ACT: Action.GHOST_SEARCH,
         TYPE: "oneTimeCodes",
         frameURLs: [url],
-      }),
+      })
     );
     return {
       cmd: Command.GET_ONE_TIME_CODES,
@@ -138,10 +132,7 @@ export const APWMessages = {
     };
   },
 
-  verifyChallenge(
-    session: SRPSession,
-    m: Buffer,
-  ): Message {
+  verifyChallenge(session: SRPSession, m: Buffer): Message {
     return {
       cmd: Command.HANDSHAKE,
       msg: {
@@ -198,7 +189,7 @@ export class ApplePasswordManager {
       }
       try {
         const data = await this.session.decrypt(
-          this.session.deserialize(payload.SMSG.SDATA),
+          this.session.deserialize(payload.SMSG.SDATA)
         );
         return JSON.parse(data.toString("utf8"));
       } catch (_) {
@@ -207,7 +198,7 @@ export class ApplePasswordManager {
     } else {
       throw new APWError(
         Status.INVALID_SESSION,
-        "No session exists. Ensure client is authenticated.",
+        "No session exists. Ensure client is authenticated."
       );
     }
   }
@@ -218,7 +209,7 @@ export class ApplePasswordManager {
     if (this.challengeTimestamp >= challengeTimestamp - 5 * 1000) return;
     this.challengeTimestamp = challengeTimestamp;
     const { payload } = await this.sendMessage(
-      APWMessages.requestChallenge(this.session),
+      APWMessages.requestChallenge(this.session)
     );
 
     let pake;
@@ -227,14 +218,14 @@ export class ApplePasswordManager {
     } catch (_) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server hello: missing payload",
+        "Invalid server hello: missing payload"
       );
     }
 
     if (pake.TID !== this.session.username) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server hello: destined to another session",
+        "Invalid server hello: destined to another session"
       );
     }
 
@@ -245,7 +236,7 @@ export class ApplePasswordManager {
       default:
         throw new APWError(
           Status.SERVER_ERROR,
-          `Invalid server hello: error code ${pake.ErrCode}`,
+          `Invalid server hello: error code ${pake.ErrCode}`
         );
     }
 
@@ -253,21 +244,21 @@ export class ApplePasswordManager {
     if (pake.MSG.toString() !== MSGTypes.SERVER_KEY_EXCHANGE.toString()) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server hello: unexpected message",
+        "Invalid server hello: unexpected message"
       );
     }
 
     if (pake.PROTO !== SecretSessionVersion.SRP_WITH_RFC_VERIFICATION) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server hello: unsupported protocol",
+        "Invalid server hello: unsupported protocol"
       );
     }
 
     if ("VER" in pake && pake.VER !== VERSION) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server hello: unsupported version",
+        "Invalid server hello: unsupported version"
       );
     }
 
@@ -290,13 +281,13 @@ export class ApplePasswordManager {
     } catch (_) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server verification: missing payload",
+        "Invalid server verification: missing payload"
       );
     }
     if (pake.TID !== this.session.username) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server verification: destined to another session",
+        "Invalid server verification: destined to another session"
       );
     }
 
@@ -304,7 +295,7 @@ export class ApplePasswordManager {
     if (pake.MSG.toString() !== MSGTypes.SERVER_VERIFICATION.toString()) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server verification: unexpected message",
+        "Invalid server verification: unexpected message"
       );
     }
 
@@ -318,7 +309,7 @@ export class ApplePasswordManager {
       default:
         throw new APWError(
           Status.SERVER_ERROR,
-          `Invalid server verification: error code ${pake.ErrCode}`,
+          `Invalid server verification: error code ${pake.ErrCode}`
         );
     }
 
@@ -326,7 +317,7 @@ export class ApplePasswordManager {
     if (readBigInt(this.session.deserialize(pake.HAMK)) !== readBigInt(hmac)) {
       throw new APWError(
         Status.SERVER_ERROR,
-        "Invalid server verification: HAMK mismatch",
+        "Invalid server verification: HAMK mismatch"
       );
     }
     console.log("Challenge verified, updating config");
@@ -347,7 +338,7 @@ export class ApplePasswordManager {
     const msg = await APWMessages.getPasswordForURL(
       this.session,
       url,
-      loginName || "",
+      loginName || ""
     );
     const { payload } = await this.sendMessage(msg);
     const response = await this.decryptPayload(payload);
@@ -355,20 +346,14 @@ export class ApplePasswordManager {
   }
 
   async getOTPForURL(url: string) {
-    const msg = await APWMessages.getOTPForURL(
-      this.session,
-      `http://${url}`,
-    );
+    const msg = await APWMessages.getOTPForURL(this.session, `http://${url}`);
     const { payload } = await this.sendMessage(msg);
     const response = await this.decryptPayload(payload);
     return response;
   }
 
   async listOTPForURL(url: string) {
-    const msg = await APWMessages.listOTPForURL(
-      this.session,
-      `http://${url}`,
-    );
+    const msg = await APWMessages.listOTPForURL(this.session, `http://${url}`);
     const { payload } = await this.sendMessage(msg);
     const response = await this.decryptPayload(payload);
     return response;

@@ -51,7 +51,7 @@ const otp = new Command()
   })
   .command("get", "Get a OTP for a website.")
   .arguments("<url:string>")
-  .action(async (_, url: string) => {
+  .action(async (_: unknown, url: string) => {
     if (!url) {
       throw new Error("Missing required argument 'url'.");
     }
@@ -59,7 +59,7 @@ const otp = new Command()
   })
   .command("list", "List available OTPs for a website.")
   .arguments("<url:string>")
-  .action(async (_, url: string) => {
+  .action(async (_: unknown, url: string) => {
     if (!url) {
       throw new Error("Missing required argument 'url'.");
     }
@@ -84,7 +84,7 @@ const pw = new Command()
   })
   .command("get", "Get a password for a website.")
   .arguments("<url:string> [username:string]")
-  .action(async (_, url: string, username?: string) => {
+  .action(async (_: unknown, url: string, username?: string) => {
     if (!url) {
       throw new Error("Missing required argument 'url'.");
     }
@@ -92,7 +92,7 @@ const pw = new Command()
   })
   .command("list", "List available accounts for a website.")
   .arguments("<url:string>")
-  .action(async (_, url: string) => {
+  .action(async (_: unknown, url: string) => {
     if (!url) {
       throw new Error("Missing required argument 'url'.");
     }
@@ -124,12 +124,14 @@ const auth = new Command()
       username: true,
       clientPrivateKey: true,
     });
-    console.log(JSON.stringify({
-      salt: toBase64(srpValues.salt),
-      serverKey: toBase64(srpValues.serverPublicKey),
-      username: srpValues.username,
-      clientKey: toBase64(srpValues.clientPrivateKey),
-    }));
+    console.log(
+      JSON.stringify({
+        salt: toBase64(srpValues.salt),
+        serverKey: toBase64(srpValues.serverPublicKey),
+        username: srpValues.username,
+        clientKey: toBase64(srpValues.clientPrivateKey),
+      })
+    );
   })
   .command("response", "Respond to a challenge from the daemon.")
   .option("-p, --pin <pin>", "challenge-response pin.", { required: true })
@@ -141,20 +143,28 @@ const auth = new Command()
     required: true,
   })
   .option("-u, --username <username>", "client username.", { required: true })
-  .action(async (options) => {
-    const { serverKey, salt, username, clientKey, pin } = options;
-    const serverPublicKey = readBigInt(Buffer.from(serverKey, "base64"));
-    const clientPrivateKey = readBigInt(Buffer.from(clientKey, "base64"));
-    const saltResponse = readBigInt(Buffer.from(salt, "base64"));
-    client.session.updateWithValues({
-      username,
-      salt: saltResponse,
-      clientPrivateKey,
-      serverPublicKey,
-    });
-    await client.verifyChallenge(pin);
-    console.log(JSON.stringify({ status: Status.SUCCESS }));
-  });
+  .action(
+    async (options: {
+      pin: string;
+      salt: string;
+      serverKey: string;
+      clientKey: string;
+      username: string;
+    }) => {
+      const { serverKey, salt, username, clientKey, pin } = options;
+      const serverPublicKey = readBigInt(Buffer.from(serverKey, "base64"));
+      const clientPrivateKey = readBigInt(Buffer.from(clientKey, "base64"));
+      const saltResponse = readBigInt(Buffer.from(salt, "base64"));
+      client.session.updateWithValues({
+        username,
+        salt: saltResponse,
+        clientPrivateKey,
+        serverPublicKey,
+      });
+      await client.verifyChallenge(pin);
+      console.log(JSON.stringify({ status: Status.SUCCESS }));
+    }
+  );
 
 try {
   await new Command()

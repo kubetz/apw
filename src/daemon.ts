@@ -14,7 +14,7 @@ const readManifest = (): ManifestConfig => {
   ].find(existsSync);
   if (!path) {
     throw new Error(
-      "APW Helper manifest not found. You must be running macOS 14 or above.",
+      "APW Helper manifest not found. You must be running macOS 14 or above."
     );
   }
   const data = Deno.readFileSync(path);
@@ -49,7 +49,7 @@ export async function Daemon({ port = 0 }: { port: number }) {
   const writer = process.stdin.getWriter();
   while (true) {
     const { data, rinfo } = await new Promise<UDPSocket>((resolve) => {
-      listener.once("message", (msg, rinfo) => {
+      listener.once("message", (msg: Buffer, rinfo: RemoteInfo) => {
         resolve({ data: msg, rinfo });
       });
     });
