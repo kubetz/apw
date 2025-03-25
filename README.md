@@ -28,6 +28,10 @@
 
 <!-- ABOUT THE PROJECT -->
 
+## Disclaimer
+
+This is a fork that limits the privileges of the config directory and file.
+
 ## About The Project
 
 This project introduces a CLI interface designed to access iCloud passwords and
