@@ -133,7 +133,7 @@ deno run --allow-all src/cli.ts <OPTIONS>
 To build a statically compiled binary:
 
 ```
-deno compile --allow-all -o apw src/cli.ts
+deno compile --allow-all -o dist/apw src/cli.ts
 ```
 
 ## Contributing
