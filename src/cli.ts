@@ -130,7 +130,7 @@ const auth = new Command()
         serverKey: toBase64(srpValues.serverPublicKey),
         username: srpValues.username,
         clientKey: toBase64(srpValues.clientPrivateKey),
-      })
+      }),
     );
   })
   .command("response", "Respond to a challenge from the daemon.")
@@ -163,7 +163,7 @@ const auth = new Command()
       });
       await client.verifyChallenge(pin);
       console.log(JSON.stringify({ status: Status.SUCCESS }));
-    }
+    },
   );
 
 try {

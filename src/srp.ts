@@ -29,7 +29,7 @@ const GROUP_PRIME = BigInt(
       1AD2EE6B F12FFA06 D98A0864 D8760273 3EC86A64 521F2B18 177B200C
       BBE11757 7A615D6C 770988C0 BAD946E2 08E24FA0 74E5AB31 43DB5BFC
       E0FD108E 4B82D120 A93AD2CA FFFFFFFF FFFFFFFF
-    `.replaceAll(/[^0-9A-F]/g, "")
+    `.replaceAll(/[^0-9A-F]/g, ""),
 ); // N
 const GROUP_PRIME_BYTES = 3072 >> 3;
 
@@ -47,7 +47,7 @@ export class SRPSession {
   private constructor(
     username: Buffer,
     clientPrivateKey: bigint,
-    shouldUseBase64 = false
+    shouldUseBase64 = false,
   ) {
     this.clientPrivateKey = clientPrivateKey;
     this.shouldUseBase64 = shouldUseBase64;
@@ -115,13 +115,13 @@ export class SRPSession {
     if (this.serverPublicKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing server public key"
+        "Invalid session state: missing server public key",
       );
     }
     if (this.salt === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing salt"
+        "Invalid session state: missing salt",
       );
     }
 
@@ -132,7 +132,7 @@ export class SRPSession {
           Buffer.concat([
             pad(toBuffer(this.clientPublicKey), GROUP_PRIME_BYTES),
             pad(toBuffer(this.serverPublicKey), GROUP_PRIME_BYTES),
-          ])
+          ]),
         ),
 
         // k
@@ -140,13 +140,13 @@ export class SRPSession {
           Buffer.concat([
             toBuffer(GROUP_PRIME),
             pad(toBuffer(GROUP_GENERATOR), GROUP_PRIME_BYTES),
-          ])
+          ]),
         ),
 
         // x
         sha256(this.username + ":" + password).then(
           async (hash) =>
-            await sha256(Buffer.concat([toBuffer(this.salt), hash]))
+            await sha256(Buffer.concat([toBuffer(this.salt), hash])),
         ),
       ])
     ).map(readBigInt);
@@ -156,7 +156,7 @@ export class SRPSession {
       this.serverPublicKey -
         multiplier * powermod(GROUP_GENERATOR, saltedPassword, GROUP_PRIME),
       this.clientPrivateKey + BigInt(publicKeysHash) * BigInt(saltedPassword),
-      GROUP_PRIME
+      GROUP_PRIME,
     );
 
     this.sharedKey = readBigInt(await sha256(premasterSecret));
@@ -167,19 +167,19 @@ export class SRPSession {
     if (this.serverPublicKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing server public key"
+        "Invalid session state: missing server public key",
       );
     }
     if (this.salt === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing salt"
+        "Invalid session state: missing salt",
       );
     }
     if (this.sharedKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing shared key"
+        "Invalid session state: missing shared key",
       );
     }
 
@@ -197,7 +197,7 @@ export class SRPSession {
         toBuffer(this.clientPublicKey),
         toBuffer(this.serverPublicKey),
         toBuffer(this.sharedKey),
-      ])
+      ]),
     );
   }
 
@@ -205,7 +205,7 @@ export class SRPSession {
     if (this.sharedKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Invalid session state: missing shared key"
+        "Invalid session state: missing shared key",
       );
     }
 
@@ -214,7 +214,7 @@ export class SRPSession {
         toBuffer(this.clientPublicKey),
         data,
         toBuffer(this.sharedKey),
-      ])
+      ]),
     );
   }
 
@@ -234,7 +234,7 @@ export class SRPSession {
     if (encryptionKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Missing encryption key. Reauthenticate with `apw auth`."
+        "Missing encryption key. Reauthenticate with `apw auth`.",
       );
     }
 
@@ -247,8 +247,8 @@ export class SRPSession {
             iv: initializationVector,
           },
           encryptionKey,
-          toBuffer(data)
-        )
+          toBuffer(data),
+        ),
       ),
       initializationVector,
     ]);
@@ -259,7 +259,7 @@ export class SRPSession {
     if (encryptionKey === undefined) {
       throw new APWError(
         Status.INVALID_SESSION,
-        "Missing encryption key. Reauthenticate with `apw auth`."
+        "Missing encryption key. Reauthenticate with `apw auth`.",
       );
     }
 
@@ -271,8 +271,8 @@ export class SRPSession {
           iv: initializationVector,
         },
         encryptionKey,
-        data.subarray(16)
-      )
+        data.subarray(16),
+      ),
     );
   }
 }

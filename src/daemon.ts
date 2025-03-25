@@ -14,7 +14,7 @@ const readManifest = (): ManifestConfig => {
   ].find(existsSync);
   if (!path) {
     throw new Error(
-      "APW Helper manifest not found. You must be running macOS 14 or above."
+      "APW Helper manifest not found. You must be running macOS 14 or above.",
     );
   }
   const data = Deno.readFileSync(path);

@@ -36,7 +36,7 @@ export const toBase64 = (data: any) => toBuffer(data).toString("base64");
 export const readBigInt = (buffer: Buffer): bigint => {
   return buffer.reduce(
     (value: bigint, byte: number) => (value << 8n) | BigInt(byte),
-    0n
+    0n,
   );
 };
 
@@ -95,7 +95,7 @@ export const writeConfig = ({
   Deno.mkdirSync(DATA_PATH, { recursive: true, mode: 0o700 }); // Ensure directory is private
   try {
     existingConfig = JSON.parse(
-      Deno.readTextFileSync(`${DATA_PATH}/config.json`)
+      Deno.readTextFileSync(`${DATA_PATH}/config.json`),
     );
   } catch (_) {
     existingConfig = { sharedKey: "", username: "" };
@@ -109,7 +109,7 @@ export const writeConfig = ({
   Deno.writeTextFileSync(
     `${DATA_PATH}/config.json`,
     JSON.stringify(updatedConfig),
-    { mode: 0o600 } // Ensure file is private
+    { mode: 0o600 }, // Ensure file is private
   );
 };
 
@@ -118,8 +118,8 @@ export const readConfig = () => {
     const content = Deno.readTextFileSync(`${DATA_PATH}/config.json`);
     const config: APWConfig = JSON.parse(content);
     return {
-      sharedKey:
-        config.sharedKey && readBigInt(Buffer.from(config.sharedKey, "base64")),
+      sharedKey: config.sharedKey &&
+        readBigInt(Buffer.from(config.sharedKey, "base64")),
       username: config.username,
       port: config.port,
     };
